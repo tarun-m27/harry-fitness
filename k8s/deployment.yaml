@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: harry-fitness-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: harry-fitness
+  template:
+    metadata:
+      labels:
+        app: harry-fitness
+    spec:
+      containers:
+      - name: harry-fitness
+        image: tarunm27/harry-fitness:latest
+        ports:
+        - containerPort: 80

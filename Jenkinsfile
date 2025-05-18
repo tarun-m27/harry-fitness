@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = "tarunm27/harry-fitness"
+        K8S_DEPLOYMENT = "harry-fitness-deployment"
+        K8S_NAMESPACE = "default"
+    }
+
     stages {
         stage('Clone Repository') {
             steps {
@@ -11,16 +17,17 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build('tarunm27/harry-fitness')
+                    sh 'docker build -t $DOCKER_IMAGE .'
                 }
             }
         }
 
-        stage('Push to DockerHub') {
+        stage('Push to Docker Hub') {
             steps {
-                withDockerRegistry([credentialsId: 'dockerhub-creds', url: '']) {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     script {
-                        docker.image('tarunm27/harry-fitness').push('latest')
+                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                        sh 'docker push $DOCKER_IMAGE'
                     }
                 }
             }
@@ -28,8 +35,10 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f k8s/deployment.yaml'
-                sh 'kubectl apply -f k8s/service.yaml'
+                script {
+                    sh 'kubectl apply -f k8s/deployment.yaml'
+                    sh 'kubectl apply -f k8s/service.yaml'
+                }
             }
         }
     }

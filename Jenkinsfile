@@ -12,7 +12,7 @@ pipeline {
 
         stage('Push to DockerHub') {
             steps {
-                withDockerRegistry([credentialsId: 'dockerhub-creds', url: '']) {
+                withDockerRegistry([credentialsId: 'devops-exp', url: 'https://index.docker.io/v1/']) {
                     script {
                         docker.image('tarunm27/harry-fitness').push('latest')
                     }
